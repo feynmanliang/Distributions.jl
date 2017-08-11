@@ -26,14 +26,14 @@ External links
 * [Log normal distribution on Wikipedia](http://en.wikipedia.org/wiki/Log-normal_distribution)
 
 """
-immutable LogNormal{T<:Real} <: ContinuousUnivariateDistribution
+struct LogNormal{T<:Real} <: ContinuousUnivariateDistribution
     μ::T
     σ::T
 
-    (::Type{LogNormal{T}}){T}(μ::T, σ::T) = (@check_args(LogNormal, σ > zero(σ)); new{T}(μ, σ))
+    LogNormal{T}(μ::T, σ::T) where {T} = (@check_args(LogNormal, σ > zero(σ)); new{T}(μ, σ))
 end
 
-LogNormal{T<:Real}(μ::T, σ::T) = LogNormal{T}(μ, σ)
+LogNormal(μ::T, σ::T) where {T<:Real} = LogNormal{T}(μ, σ)
 LogNormal(μ::Real, σ::Real) = LogNormal(promote(μ, σ)...)
 LogNormal(μ::Integer, σ::Integer) = LogNormal(Float64(μ), Float64(σ))
 LogNormal(μ::Real) = LogNormal(μ, 1.0)
@@ -90,7 +90,7 @@ end
 #### Evalution
 
 pdf(d::LogNormal, x::Real) = normpdf(d.μ, d.σ, log(x)) / x
-function logpdf{T<:Real}(d::LogNormal{T}, x::Real)
+function logpdf(d::LogNormal{T}, x::Real) where T<:Real
     if !insupport(d, x)
         return -T(Inf)
     else
@@ -99,17 +99,17 @@ function logpdf{T<:Real}(d::LogNormal{T}, x::Real)
     end
 end
 
-cdf{T<:Real}(d::LogNormal{T}, x::Real) = x > 0 ? normcdf(d.μ, d.σ, log(x)) : zero(T)
-ccdf{T<:Real}(d::LogNormal{T}, x::Real) = x > 0 ? normccdf(d.μ, d.σ, log(x)) : one(T)
-logcdf{T<:Real}(d::LogNormal{T}, x::Real) = x > 0 ? normlogcdf(d.μ, d.σ, log(x)) : -T(Inf)
-logccdf{T<:Real}(d::LogNormal{T}, x::Real) = x > 0 ? normlogccdf(d.μ, d.σ, log(x)) : zero(T)
+cdf(d::LogNormal{T}, x::Real) where {T<:Real} = x > 0 ? normcdf(d.μ, d.σ, log(x)) : zero(T)
+ccdf(d::LogNormal{T}, x::Real) where {T<:Real} = x > 0 ? normccdf(d.μ, d.σ, log(x)) : one(T)
+logcdf(d::LogNormal{T}, x::Real) where {T<:Real} = x > 0 ? normlogcdf(d.μ, d.σ, log(x)) : -T(Inf)
+logccdf(d::LogNormal{T}, x::Real) where {T<:Real} = x > 0 ? normlogccdf(d.μ, d.σ, log(x)) : zero(T)
 
 quantile(d::LogNormal, q::Real) = exp(norminvcdf(d.μ, d.σ, q))
 cquantile(d::LogNormal, q::Real) = exp(norminvccdf(d.μ, d.σ, q))
 invlogcdf(d::LogNormal, lq::Real) = exp(norminvlogcdf(d.μ, d.σ, lq))
 invlogccdf(d::LogNormal, lq::Real) = exp(norminvlogccdf(d.μ, d.σ, lq))
 
-function gradlogpdf{T<:Real}(d::LogNormal{T}, x::Real)
+function gradlogpdf(d::LogNormal{T}, x::Real) where T<:Real
     (μ, σ) = params(d)
     x > 0 ? - ((log(x) - μ) / (σ^2) + 1) / x : zero(T)
 end

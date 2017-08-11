@@ -21,17 +21,17 @@ External links
  * [Pareto distribution on Wikipedia](http://en.wikipedia.org/wiki/Pareto_distribution)
 
 """
-immutable Pareto{T<:Real} <: ContinuousUnivariateDistribution
+struct Pareto{T<:Real} <: ContinuousUnivariateDistribution
     α::T
     θ::T
 
-    function (::Type{Pareto{T}}){T}(α::T, θ::T)
+    function Pareto{T}(α::T, θ::T) where T
         @check_args(Pareto, α > zero(α) && θ > zero(θ))
         new{T}(α, θ)
     end
 end
 
-Pareto{T<:Real}(α::T, θ::T) = Pareto{T}(α, θ)
+Pareto(α::T, θ::T) where {T<:Real} = Pareto{T}(α, θ)
 Pareto(α::Real, θ::Real) = Pareto(promote(α, θ)...)
 Pareto(α::Integer, θ::Integer) = Pareto(Float64(α), Float64(θ))
 Pareto(α::Real) = Pareto(α, 1.0)
@@ -54,24 +54,24 @@ params(d::Pareto) = (d.α, d.θ)
 
 #### Statistics
 
-function mean{T<:Real}(d::Pareto{T})
+function mean(d::Pareto{T}) where T<:Real
     (α, θ) = params(d)
     α > 1 ? α * θ / (α - 1) : T(Inf)
 end
 median(d::Pareto) = ((α, θ) = params(d); θ * 2^(1/α))
 mode(d::Pareto) = d.θ
 
-function var{T<:Real}(d::Pareto{T})
+function var(d::Pareto{T}) where T<:Real
     (α, θ) = params(d)
     α > 2 ? (θ^2 * α) / ((α - 1)^2 * (α - 2)) : T(Inf)
 end
 
-function skewness{T<:Real}(d::Pareto{T})
+function skewness(d::Pareto{T}) where T<:Real
     α = shape(d)
     α > 3 ? ((2(1 + α)) / (α - 3)) * sqrt((α - 2) / α) : T(NaN)
 end
 
-function kurtosis{T<:Real}(d::Pareto{T})
+function kurtosis(d::Pareto{T}) where T<:Real
     α = shape(d)
     α > 4 ? (6(α^3 + α^2 - 6α - 2)) / (α * (α - 3) * (α - 4)) : T(NaN)
 end
@@ -81,24 +81,24 @@ entropy(d::Pareto) = ((α, θ) = params(d); log(θ / α) + 1 / α + 1)
 
 #### Evaluation
 
-function pdf{T<:Real}(d::Pareto{T}, x::Real)
+function pdf(d::Pareto{T}, x::Real) where T<:Real
     (α, θ) = params(d)
     x >= θ ? α * (θ / x)^α * (1/x) : zero(T)
 end
 
-function logpdf{T<:Real}(d::Pareto{T}, x::Real)
+function logpdf(d::Pareto{T}, x::Real) where T<:Real
     (α, θ) = params(d)
     x >= θ ? log(α) + α * log(θ) - (α + 1) * log(x) : -T(Inf)
 end
 
-function ccdf{T<:Real}(d::Pareto{T}, x::Real)
+function ccdf(d::Pareto{T}, x::Real) where T<:Real
     (α, θ) = params(d)
     x >= θ ? (θ / x)^α : one(T)
 end
 
 cdf(d::Pareto, x::Real) = 1 - ccdf(d, x)
 
-function logccdf{T<:Real}(d::Pareto{T}, x::Real)
+function logccdf(d::Pareto{T}, x::Real) where T<:Real
     (α, θ) = params(d)
     x >= θ ? α * log(θ / x) : zero(T)
 end

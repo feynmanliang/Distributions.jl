@@ -23,14 +23,14 @@ External links
 * [Logistic distribution on Wikipedia](http://en.wikipedia.org/wiki/Logistic_distribution)
 
 """
-immutable Logistic{T<:Real} <: ContinuousUnivariateDistribution
+struct Logistic{T<:Real} <: ContinuousUnivariateDistribution
     μ::T
     θ::T
 
-    (::Type{Logistic{T}}){T}(μ::T, θ::T) = (@check_args(Logistic, θ > zero(θ)); new{T}(μ, θ))
+    Logistic{T}(μ::T, θ::T) where {T} = (@check_args(Logistic, θ > zero(θ)); new{T}(μ, θ))
 end
 
-Logistic{T<:Real}(μ::T, θ::T) = Logistic{T}(μ, θ)
+Logistic(μ::T, θ::T) where {T<:Real} = Logistic{T}(μ, θ)
 Logistic(μ::Real, θ::Real) = Logistic(promote(μ, θ)...)
 Logistic(μ::Integer, θ::Integer) = Logistic(Float64(μ), Float64(θ))
 Logistic(μ::Real) = Logistic(μ, 1.0)
@@ -63,8 +63,8 @@ mode(d::Logistic) = d.μ
 
 std(d::Logistic) = π * d.θ / sqrt3
 var(d::Logistic) = (π * d.θ)^2 / 3
-skewness{T<:Real}(d::Logistic{T}) = zero(T)
-kurtosis{T<:Real}(d::Logistic{T}) = T(6)/5
+skewness(d::Logistic{T}) where {T<:Real} = zero(T)
+kurtosis(d::Logistic{T}) where {T<:Real} = T(6)/5
 
 entropy(d::Logistic) = log(d.θ) + 2
 

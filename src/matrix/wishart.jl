@@ -9,7 +9,7 @@ The [Wishart distribution](http://en.wikipedia.org/wiki/Wishart_distribution) is
 multidimensional generalization of the Chi-square distribution, which is characterized by
 a degree of freedom ν, and a base matrix S.
 """
-immutable Wishart{T<:Real, ST<:AbstractPDMat} <: ContinuousMatrixDistribution
+struct Wishart{T<:Real, ST<:AbstractPDMat} <: ContinuousMatrixDistribution
     df::T     # degree of freedom
     S::ST           # the scale matrix
     c0::T     # the logarithm of normalizing constant in pdf
@@ -17,7 +17,7 @@ end
 
 #### Constructors
 
-function Wishart{T<:Real}(df::T, S::AbstractPDMat{T})
+function Wishart(df::T, S::AbstractPDMat{T}) where T<:Real
     p = dim(S)
     df > p - 1 || error("dpf should be greater than dim - 1.")
     c0 = _wishart_c0(df, S)

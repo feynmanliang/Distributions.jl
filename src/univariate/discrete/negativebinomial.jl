@@ -27,11 +27,11 @@ External links:
 * [Negative binomial distribution on Wikipedia](http://en.wikipedia.org/wiki/Negative_binomial_distribution)
 
 """
-immutable NegativeBinomial{T<:Real} <: DiscreteUnivariateDistribution
+struct NegativeBinomial{T<:Real} <: DiscreteUnivariateDistribution
     r::T
     p::T
 
-    function (::Type{NegativeBinomial{T}}){T}(r::T, p::T)
+    function NegativeBinomial{T}(r::T, p::T) where T
         @check_args(NegativeBinomial, r > zero(r))
         @check_args(NegativeBinomial, zero(p) < p <= one(p))
         new{T}(r, p)
@@ -39,7 +39,7 @@ immutable NegativeBinomial{T<:Real} <: DiscreteUnivariateDistribution
 
 end
 
-NegativeBinomial{T<:Real}(r::T, p::T) = NegativeBinomial{T}(r, p)
+NegativeBinomial(r::T, p::T) where {T<:Real} = NegativeBinomial{T}(r, p)
 NegativeBinomial(r::Real, p::Real) = NegativeBinomial(promote(r, p)...)
 NegativeBinomial(r::Integer, p::Integer) = NegativeBinomial(Float64(r), Float64(p))
 NegativeBinomial(r::Real) = NegativeBinomial(r, 0.5)
@@ -87,7 +87,7 @@ mode(d::NegativeBinomial) = (p = succprob(d); floor(Int,(1 - p) * (d.r - 1) / p)
 
 rand(d::NegativeBinomial) = convert(Int, StatsFuns.RFunctions.nbinomrand(d.r, d.p))
 
-immutable RecursiveNegBinomProbEvaluator <: RecursiveProbabilityEvaluator
+struct RecursiveNegBinomProbEvaluator <: RecursiveProbabilityEvaluator
     r::Float64
     p0::Float64
 end

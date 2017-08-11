@@ -19,11 +19,11 @@ Multinomial(n, k)   # Multinomial distribution for n trials with equal probabili
                     # over 1:k
 ```
 """
-immutable Multinomial{T<:Real} <: DiscreteMultivariateDistribution
+struct Multinomial{T<:Real} <: DiscreteMultivariateDistribution
     n::Int
     p::Vector{T}
 
-    function (::Type{Multinomial{T}}){T}(n::Integer, p::Vector{T})
+    function Multinomial{T}(n::Integer, p::Vector{T}) where T
         if n < 0
             throw(ArgumentError("n must be a nonnegative integer."))
         end
@@ -32,9 +32,9 @@ immutable Multinomial{T<:Real} <: DiscreteMultivariateDistribution
         end
         new{T}(round(Int, n), p)
     end
-    (::Type{Multinomial{T}}){T}(n::Integer, p::Vector{T}, ::NoArgCheck) = new{T}(round(Int, n), p)
+    Multinomial{T}(n::Integer, p::Vector{T}, ::NoArgCheck) where {T} = new{T}(round(Int, n), p)
 end
-Multinomial{T<:Real}(n::Integer, p::Vector{T}) = Multinomial{T}(n, p)
+Multinomial(n::Integer, p::Vector{T}) where {T<:Real} = Multinomial{T}(n, p)
 Multinomial(n::Integer, k::Integer) = Multinomial{Float64}(round(Int, n), fill(1.0 / k, k))
 
 # Parameters
@@ -55,7 +55,7 @@ convert{T<:Real}(::Type{Multinomial{T}}, n, p::Vector) = Multinomial(n, Vector{T
 
 mean(d::Multinomial) = d.n .* d.p
 
-function var{T<:Real}(d::Multinomial{T})
+function var(d::Multinomial{T}) where T<:Real
     p = probs(d)
     k = length(p)
     n = ntrials(d)
@@ -68,7 +68,7 @@ function var{T<:Real}(d::Multinomial{T})
     v
 end
 
-function cov{T<:Real}(d::Multinomial{T})
+function cov(d::Multinomial{T}) where T<:Real
     p = probs(d)
     k = length(p)
     n = ntrials(d)
@@ -91,7 +91,7 @@ function cov{T<:Real}(d::Multinomial{T})
     C
 end
 
-function mgf{T<:Real}(d::Multinomial{T}, t::AbstractVector)
+function mgf(d::Multinomial{T}, t::AbstractVector) where T<:Real
     p = probs(d)
     n = ntrials(p)
     s = zero(T)
@@ -101,7 +101,7 @@ function mgf{T<:Real}(d::Multinomial{T}, t::AbstractVector)
     return s^n
 end
 
-function cf{T<:Real}(d::Multinomial{T}, t::AbstractVector)
+function cf(d::Multinomial{T}, t::AbstractVector) where T<:Real
     p = probs(d)
     n = ntrials(d)
     s = zero(Complex{T})
@@ -126,7 +126,7 @@ end
 
 # Evaluation
 
-function insupport{T<:Real}(d::Multinomial, x::AbstractVector{T})
+function insupport(d::Multinomial, x::AbstractVector{T}) where T<:Real
     k = length(d)
     length(x) == k || return false
     s = 0.0
@@ -140,7 +140,7 @@ function insupport{T<:Real}(d::Multinomial, x::AbstractVector{T})
     return s == ntrials(d)  # integer computation would not yield truncation errors
 end
 
-function _logpdf{T<:Real}(d::Multinomial, x::AbstractVector{T})
+function _logpdf(d::Multinomial, x::AbstractVector{T}) where T<:Real
     p = probs(d)
     n = ntrials(d)
     S = eltype(p)
@@ -159,14 +159,14 @@ end
 
 # Sampling
 
-_rand!{T<:Real}(d::Multinomial, x::AbstractVector{T}) = multinom_rand!(ntrials(d), probs(d), x)
+_rand!(d::Multinomial, x::AbstractVector{T}) where {T<:Real} = multinom_rand!(ntrials(d), probs(d), x)
 
 sampler(d::Multinomial) = MultinomialSampler(ntrials(d), probs(d))
 
 
 ## Fit model
 
-immutable MultinomialStats <: SufficientStats
+struct MultinomialStats <: SufficientStats
     n::Int  # number of trials in each experiment
     scnts::Vector{Float64}  # sum of counts
     tw::Float64  # total sample weight

@@ -24,17 +24,17 @@ External links:
 
 * [Bernoulli distribution on Wikipedia](http://en.wikipedia.org/wiki/Bernoulli_distribution)
 """
-immutable Bernoulli{T<:Real} <: DiscreteUnivariateDistribution
+struct Bernoulli{T<:Real} <: DiscreteUnivariateDistribution
     p::T
 
-    function (::Type{Bernoulli{T}}){T}(p::T)
+    function Bernoulli{T}(p::T) where T
         @check_args(Bernoulli, zero(p) <= p <= one(p))
         new{T}(p)
     end
 
 end
 
-Bernoulli{T<:Real}(p::T) = Bernoulli{T}(p)
+Bernoulli(p::T) where {T<:Real} = Bernoulli{T}(p)
 Bernoulli(p::Integer) = Bernoulli(Float64(p))
 Bernoulli() = Bernoulli(0.5)
 
@@ -93,10 +93,10 @@ ccdf(d::Bernoulli, x::Bool) = x ? succprob(d) : one(d.p)
 ccdf(d::Bernoulli, x::Int) = x < 0 ? one(d.p) :
                              x < 1 ? succprob(d) : zero(d.p)
 
-function quantile{T<:Real}(d::Bernoulli{T}, p::Real)
+function quantile(d::Bernoulli{T}, p::Real) where T<:Real
     0 <= p <= 1 ? (p <= failprob(d) ? zero(T) : one(T)) : T(NaN)
 end
-function cquantile{T<:Real}(d::Bernoulli{T}, p::Real)
+function cquantile(d::Bernoulli{T}, p::Real) where T<:Real
     0 <= p <= 1 ? (p >= succprob(d) ? zero(T) : one(T)) : T(NaN)
 end
 
@@ -112,7 +112,7 @@ rand(rng::AbstractRNG, d::Bernoulli) = round(Int, rand(rng) <= succprob(d))
 
 #### MLE fitting
 
-immutable BernoulliStats <: SufficientStats
+struct BernoulliStats <: SufficientStats
     cnt0::Float64
     cnt1::Float64
 

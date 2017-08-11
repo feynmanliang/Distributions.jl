@@ -26,17 +26,17 @@ External links
 * [Beta distribution on Wikipedia](http://en.wikipedia.org/wiki/Beta_distribution)
 
 """
-immutable Beta{T<:Real} <: ContinuousUnivariateDistribution
+struct Beta{T<:Real} <: ContinuousUnivariateDistribution
     α::T
     β::T
 
-    function (::Type{Beta{T}}){T}(α::T, β::T)
+    function Beta{T}(α::T, β::T) where T
         @check_args(Beta, α > zero(α) && β > zero(β))
         new{T}(α, β)
     end
 end
 
-Beta{T<:Real}(α::T, β::T) = Beta{T}(α, β)
+Beta(α::T, β::T) where {T<:Real} = Beta{T}(α, β)
 Beta(α::Real, β::Real) = Beta(promote(α, β)...)
 Beta(α::Integer, β::Integer) = Beta(Float64(α), Float64(β))
 Beta(α::Real) = Beta(α, α)
@@ -110,7 +110,7 @@ end
 
 @_delegate_statsfuns Beta beta α β
 
-gradlogpdf{T<:Real}(d::Beta{T}, x::Real) =
+gradlogpdf(d::Beta{T}, x::Real) where {T<:Real} =
     ((α, β) = params(d); 0 <= x <= 1 ? (α - 1) / x - (β - 1) / (1 - x) : zero(T))
 
 

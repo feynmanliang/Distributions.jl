@@ -23,7 +23,7 @@
 #
 ###########################################################
 
-@compat abstract type AbstractMvLogNormal <: ContinuousMultivariateDistribution end
+abstract type AbstractMvLogNormal <: ContinuousMultivariateDistribution end
 
 function insupport{T<:Real,D<:AbstractMvLogNormal}(::Type{D},x::AbstractVector{T})
     for i=1:length(x)
@@ -31,7 +31,7 @@ function insupport{T<:Real,D<:AbstractMvLogNormal}(::Type{D},x::AbstractVector{T
     end
     true
 end
-insupport{T<:Real}(l::AbstractMvLogNormal,x::AbstractVector{T}) = insupport(typeof(l),x)
+insupport(l::AbstractMvLogNormal,x::AbstractVector{T}) where {T<:Real} = insupport(typeof(l),x)
 assertinsupport{D<:AbstractMvLogNormal}(::Type{D},m::AbstractVector) = @assert insupport(D,m) "Mean of LogNormal distribution should be strictly positive"
 
 ###Internal functions to calculate scale and location for a desired average and covariance
@@ -161,7 +161,7 @@ Mean vector ``\\boldsymbol{\\mu}`` and covariance matrix ``\\boldsymbol{\\Sigma}
 underlying normal distribution are known as the *location* and *scale*
 parameters of the corresponding lognormal distribution.
 """
-immutable MvLogNormal{T<:Real,Cov<:AbstractPDMat,Mean<:Union{Vector, ZeroVector}} <: AbstractMvLogNormal
+struct MvLogNormal{T<:Real,Cov<:AbstractPDMat,Mean<:Union{Vector, ZeroVector}} <: AbstractMvLogNormal
     normal::MvNormal{T,Cov,Mean}
 end
 
@@ -202,24 +202,24 @@ Return the scale matrix of the distribution (the covariance matrix of the underl
 scale(d::MvLogNormal) = cov(d.normal)
 
 #See https://en.wikipedia.org/wiki/Log-normal_distribution
-mean(d::MvLogNormal) = @compat(exp.(mean(d.normal) + var(d.normal)/2))
+mean(d::MvLogNormal) = exp.(mean(d.normal) + var(d.normal)/2)
 
 """
     median(d::MvLogNormal)
 
 Return the median vector of the lognormal distribution. which is strictly smaller than the mean.
 """
-median(d::MvLogNormal) = @compat(exp.(mean(d.normal)))
+median(d::MvLogNormal) = exp.(mean(d.normal))
 
 """
     mode(d::MvLogNormal)
 
 Return the mode vector of the lognormal distribution, which is strictly smaller than the mean and median.
 """
-mode(d::MvLogNormal) = @compat(exp.(mean(d.normal) - var(d.normal)))
+mode(d::MvLogNormal) = exp.(mean(d.normal) - var(d.normal))
 function cov(d::MvLogNormal)
     m = mean(d)
-    return m*m'.*(@compat(exp.(cov(d.normal))) - 1)
+    return m*m'.*(exp.(cov(d.normal)) - 1)
   end
 var(d::MvLogNormal) = diag(cov(d))
 
@@ -227,8 +227,8 @@ var(d::MvLogNormal) = diag(cov(d))
 entropy(d::MvLogNormal) = length(d)*(1+log2π)/2 + logdetcov(d.normal)/2 + sum(mean(d.normal))
 
 #See https://en.wikipedia.org/wiki/Log-normal_distribution
-_rand!{T<:Real}(d::MvLogNormal, x::AbstractVecOrMat{T}) = @compat(exp!(_rand!(d.normal, x)))
-@compat _logpdf{T<:Real}(d::MvLogNormal, x::AbstractVecOrMat{T}) = insupport(d, x) ? (_logpdf(d.normal, log.(x)) - sum(log.(x))) : -Inf
-_pdf{T<:Real}(d::MvLogNormal, x::AbstractVecOrMat{T}) = insupport(d,x) ? _pdf(d.normal, @compat(log.(x)))/prod(x) : 0.0
+_rand!(d::MvLogNormal, x::AbstractVecOrMat{T}) where {T<:Real} = exp!(_rand!(d.normal, x))
+_logpdf(d::MvLogNormal, x::AbstractVecOrMat{T}) where {T<:Real} = insupport(d, x) ? (_logpdf(d.normal, log.(x)) - sum(log.(x))) : -Inf
+_pdf(d::MvLogNormal, x::AbstractVecOrMat{T}) where {T<:Real} = insupport(d,x) ? _pdf(d.normal, log.(x))/prod(x) : 0.0
 
 Base.show(io::IO,d::MvLogNormal) = show_multline(io, d, [(:dim, length(d)), (:μ, mean(d.normal)), (:Σ, cov(d.normal))])

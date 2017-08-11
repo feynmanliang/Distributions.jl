@@ -24,11 +24,11 @@ External links:
 * [Poisson-binomial distribution on Wikipedia](http://en.wikipedia.org/wiki/Poisson_binomial_distribution)
 
 """
-immutable PoissonBinomial{T<:Real} <: DiscreteUnivariateDistribution
+struct PoissonBinomial{T<:Real} <: DiscreteUnivariateDistribution
 
     p::Vector{T}
     pmf::Vector{T}
-    function (::Type{PoissonBinomial{T}}){T}(p::AbstractArray)
+    function PoissonBinomial{T}(p::AbstractArray) where T
         for i=1:length(p)
             if !(0 <= p[i] <= 1)
                 error("Each element of p must be in [0, 1].")
@@ -41,7 +41,7 @@ immutable PoissonBinomial{T<:Real} <: DiscreteUnivariateDistribution
 
 end
 
-PoissonBinomial{T<:Real}(p::AbstractArray{T}) = PoissonBinomial{T}(p)
+PoissonBinomial(p::AbstractArray{T}) where {T<:Real} = PoissonBinomial{T}(p)
 
 @distr_support PoissonBinomial 0 length(d.p)
 
@@ -68,7 +68,7 @@ params(d::PoissonBinomial) = (d.p, )
 mean(d::PoissonBinomial) = sum(succprob(d))
 var(d::PoissonBinomial) = sum(succprob(d) .* failprob(d))
 
-function skewness{T<:Real}(d::PoissonBinomial{T})
+function skewness(d::PoissonBinomial{T}) where T<:Real
     v = zero(T)
     s = zero(T)
     p,  = params(d)
@@ -79,7 +79,7 @@ function skewness{T<:Real}(d::PoissonBinomial{T})
     s / sqrt(v) / v
 end
 
-function kurtosis{T<:Real}(d::PoissonBinomial{T})
+function kurtosis(d::PoissonBinomial{T}) where T<:Real
     v = zero(T)
     s = zero(T)
     p,  = params(d)
@@ -110,7 +110,7 @@ function cf(d::PoissonBinomial, t::Real)
 end
 
 pdf(d::PoissonBinomial, k::Int) = insupport(d, k) ? d.pmf[k+1] : 0
-function logpdf{T<:Real}(d::PoissonBinomial{T}, k::Int)
+function logpdf(d::PoissonBinomial{T}, k::Int) where T<:Real
     insupport(d, k) ? log(d.pmf[k + 1]) : -T(Inf)
 end
 pdf(d::PoissonBinomial) = copy(d.pmf)

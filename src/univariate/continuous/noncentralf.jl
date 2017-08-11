@@ -1,19 +1,19 @@
 """
     NoncentralF(ν1, ν2, λ)
 """
-immutable NoncentralF{T<:Real} <: ContinuousUnivariateDistribution
+struct NoncentralF{T<:Real} <: ContinuousUnivariateDistribution
     ν1::T
     ν2::T
     λ::T
 
-    function (::Type{NoncentralF{T}}){T}(ν1::T, ν2::T, λ::T)
+    function NoncentralF{T}(ν1::T, ν2::T, λ::T) where T
         @check_args(NoncentralF, ν1 > zero(T) && ν2 > zero(T))
         @check_args(NoncentralF, λ >= zero(T))
         new{T}(ν1, ν2, λ)
     end
 end
 
-NoncentralF{T<:Real}(ν1::T, ν2::T, λ::T) = NoncentralF{T}(ν1, ν2, λ)
+NoncentralF(ν1::T, ν2::T, λ::T) where {T<:Real} = NoncentralF{T}(ν1, ν2, λ)
 NoncentralF(ν1::Real, ν2::Real, λ::Real) = NoncentralF(promote(ν1, ν2, λ)...)
 NoncentralF(ν1::Integer, ν2::Integer, λ::Integer) = NoncentralF(Float64(ν1), Float64(ν2), Float64(λ))
 
@@ -36,11 +36,11 @@ params(d::NoncentralF) = (d.ν1, d.ν2, d.λ)
 
 ### Statistics
 
-function mean{T<:Real}(d::NoncentralF{T})
+function mean(d::NoncentralF{T}) where T<:Real
     d.ν2 > 2 ? d.ν2 / (d.ν2 - 2) * (d.ν1 + d.λ) / d.ν1 : T(NaN)
 end
 
-var{T<:Real}(d::NoncentralF{T}) = d.ν2 > 4 ? 2d.ν2^2 *
+var(d::NoncentralF{T}) where {T<:Real} = d.ν2 > 4 ? 2d.ν2^2 *
 		       ((d.ν1 + d.λ)^2 + (d.ν2 - 2)*(d.ν1 + 2d.λ)) /
 		       (d.ν1 * (d.ν2 - 2)^2 * (d.ν2 - 4)) : T(NaN)
 

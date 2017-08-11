@@ -20,18 +20,18 @@ External links:
 
 * [Skellam distribution on Wikipedia](http://en.wikipedia.org/wiki/Skellam_distribution)
 """
-immutable Skellam{T<:Real} <: DiscreteUnivariateDistribution
+struct Skellam{T<:Real} <: DiscreteUnivariateDistribution
     μ1::T
     μ2::T
 
-    function (::Type{Skellam{T}}){T}(μ1::T, μ2::T)
+    function Skellam{T}(μ1::T, μ2::T) where T
         @check_args(Skellam, μ1 > zero(μ1) && μ2 > zero(μ2))
         new{T}(μ1, μ2)
     end
 
 end
 
-Skellam{T<:Real}(μ1::T, μ2::T) = Skellam{T}(μ1, μ2)
+Skellam(μ1::T, μ2::T) where {T<:Real} = Skellam{T}(μ1, μ2)
 Skellam(μ1::Real, μ2::Real) = Skellam(promote(μ1, μ2)...)
 Skellam(μ1::Integer, μ2::Integer) = Skellam(Float64(μ1), Float64(μ2))
 Skellam(μ::Real) = Skellam(μ, μ)

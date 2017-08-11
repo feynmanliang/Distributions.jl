@@ -20,13 +20,13 @@ External links
 
 * [Chi-squared distribution on Wikipedia](http://en.wikipedia.org/wiki/Chi-squared_distribution)
 """
-immutable Chisq{T<:Real} <: ContinuousUnivariateDistribution
+struct Chisq{T<:Real} <: ContinuousUnivariateDistribution
     ν::T
 
-    (::Type{Chisq{T}}){T}(ν::T) = (@check_args(Chisq, ν > zero(ν)); new{T}(ν))
+    Chisq{T}(ν::T) where {T} = (@check_args(Chisq, ν > zero(ν)); new{T}(ν))
 end
 
-Chisq{T<:Real}(ν::T) = Chisq{T}(ν)
+Chisq(ν::T) where {T<:Real} = Chisq{T}(ν)
 Chisq(ν::Integer) = Chisq(Float64(ν))
 
 @distr_support Chisq 0.0 Inf
@@ -52,7 +52,7 @@ skewness(d::Chisq) = sqrt(8 / d.ν)
 
 kurtosis(d::Chisq) = 12 / d.ν
 
-mode{T<:Real}(d::Chisq{T}) = d.ν > 2 ? d.ν - 2 : zero(T)
+mode(d::Chisq{T}) where {T<:Real} = d.ν > 2 ? d.ν - 2 : zero(T)
 
 function median(d::Chisq; approx::Bool=false)
     if approx
@@ -76,7 +76,7 @@ mgf(d::Chisq, t::Real) = (1 - 2 * t)^(-d.ν/2)
 
 cf(d::Chisq, t::Real) = (1 - 2 * im * t)^(-d.ν/2)
 
-gradlogpdf{T<:Real}(d::Chisq{T}, x::Real) =  x > 0 ? (d.ν/2 - 1) / x - 1//2 : zero(T)
+gradlogpdf(d::Chisq{T}, x::Real) where {T<:Real} =  x > 0 ? (d.ν/2 - 1) / x - 1//2 : zero(T)
 
 
 #### Sampling

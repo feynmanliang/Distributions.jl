@@ -17,25 +17,25 @@ Here, `p` must be a real vector, of which all components are nonnegative and sum
 External links:
 * [Categorical distribution on Wikipedia](http://en.wikipedia.org/wiki/Categorical_distribution)
 """
-immutable Categorical{T<:Real} <: DiscreteUnivariateDistribution
+struct Categorical{T<:Real} <: DiscreteUnivariateDistribution
     K::Int
     p::Vector{T}
 
-    (::Type{Categorical{T}}){T}(p::Vector{T}, ::NoArgCheck) = new{T}(length(p), p)
+    Categorical{T}(p::Vector{T}, ::NoArgCheck) where {T} = new{T}(length(p), p)
 
-    function (::Type{Categorical{T}}){T}(p::Vector{T})
+    function Categorical{T}(p::Vector{T}) where T
         @check_args(Categorical, isprobvec(p))
         new{T}(length(p), p)
     end
 
-    function (::Type{Categorical{T}}){T}(k::Integer)
+    function Categorical{T}(k::Integer) where T
         @check_args(Categorical, k >= 1)
         new{T}(k, fill(1/k, k))
     end
 end
 
-Categorical{T<:Real}(p::Vector{T}, ::NoArgCheck) = Categorical{T}(p, NoArgCheck())
-Categorical{T<:Real}(p::Vector{T}) = Categorical{T}(p)
+Categorical(p::Vector{T}, ::NoArgCheck) where {T<:Real} = Categorical{T}(p, NoArgCheck())
+Categorical(p::Vector{T}) where {T<:Real} = Categorical{T}(p)
 Categorical(k::Integer) = Categorical{Float64}(k)
 
 @distr_support Categorical 1 d.K
@@ -55,7 +55,7 @@ params(d::Categorical) = (d.p,)
 
 ### Statistics
 
-function categorical_mean{T<:Real}(p::AbstractArray{T})
+function categorical_mean(p::AbstractArray{T}) where T<:Real
     k = length(p)
     s = zero(T)
     for i = 1:k
@@ -66,7 +66,7 @@ end
 
 mean(d::Categorical) = categorical_mean(d.p)
 
-function median{T<:Real}(d::Categorical{T})
+function median(d::Categorical{T}) where T<:Real
     k = ncategories(d)
     p = probs(d)
     cp = zero(T)
@@ -78,7 +78,7 @@ function median{T<:Real}(d::Categorical{T})
     i
 end
 
-function var{T<:Real}(d::Categorical{T})
+function var(d::Categorical{T}) where T<:Real
     k = ncategories(d)
     p = probs(d)
     m = categorical_mean(p)
@@ -89,7 +89,7 @@ function var{T<:Real}(d::Categorical{T})
     s
 end
 
-function skewness{T<:Real}(d::Categorical{T})
+function skewness(d::Categorical{T}) where T<:Real
     k = ncategories(d)
     p = probs(d)
     m = categorical_mean(p)
@@ -101,7 +101,7 @@ function skewness{T<:Real}(d::Categorical{T})
     s / (v * sqrt(v))
 end
 
-function kurtosis{T<:Real}(d::Categorical{T})
+function kurtosis(d::Categorical{T}) where T<:Real
     k = ncategories(d)
     p = probs(d)
     m = categorical_mean(p)
@@ -114,7 +114,7 @@ end
 
 entropy(d::Categorical) = entropy(d.p)
 
-function mgf{T<:Real}(d::Categorical{T}, t::Real)
+function mgf(d::Categorical{T}, t::Real) where T<:Real
     k = ncategories(d)
     p = probs(d)
     s = zero(T)
@@ -124,7 +124,7 @@ function mgf{T<:Real}(d::Categorical{T}, t::Real)
     s
 end
 
-function cf{T<:Real}(d::Categorical{T}, t::Real)
+function cf(d::Categorical{T}, t::Real) where T<:Real
     k = ncategories(d)
     p = probs(d)
     s = zero(T) + zero(T)*im
@@ -152,7 +152,7 @@ end
 
 ### Evaluation
 
-function cdf{T<:Real}(d::Categorical{T}, x::Int)
+function cdf(d::Categorical{T}, x::Int) where T<:Real
     k = ncategories(d)
     p = probs(d)
     x < 1 && return zero(T)
@@ -164,13 +164,13 @@ function cdf{T<:Real}(d::Categorical{T}, x::Int)
     return c
 end
 
-pdf{T<:Real}(d::Categorical{T}, x::Int) = insupport(d, x) ? d.p[x] : zero(T)
+pdf(d::Categorical{T}, x::Int) where {T<:Real} = insupport(d, x) ? d.p[x] : zero(T)
 
 logpdf(d::Categorical, x::Int) = insupport(d, x) ? log(d.p[x]) : -Inf
 
 pdf(d::Categorical) = copy(d.p)
 
-function _pdf!{T<:Real}(r::AbstractArray, d::Categorical{T}, rgn::UnitRange)
+function _pdf!(r::AbstractArray, d::Categorical{T}, rgn::UnitRange) where T<:Real
     vfirst = round(Int, first(rgn))
     vlast = round(Int, last(rgn))
     vl = max(vfirst, 1)
@@ -215,11 +215,11 @@ sampler(d::Categorical) = AliasTable(d.p)
 
 ### sufficient statistics
 
-immutable CategoricalStats <: SufficientStats
+struct CategoricalStats <: SufficientStats
     h::Vector{Float64}
 end
 
-function add_categorical_counts!{T<:Integer}(h::Vector{Float64}, x::AbstractArray{T})
+function add_categorical_counts!(h::Vector{Float64}, x::AbstractArray{T}) where T<:Integer
     for i = 1 : length(x)
         @inbounds xi = x[i]
         h[xi] += 1.   # cannot use @inbounds, as no guarantee that x[i] is in bound
@@ -227,7 +227,7 @@ function add_categorical_counts!{T<:Integer}(h::Vector{Float64}, x::AbstractArra
     h
 end
 
-function add_categorical_counts!{T<:Integer}(h::Vector{Float64}, x::AbstractArray{T}, w::AbstractArray{Float64})
+function add_categorical_counts!(h::Vector{Float64}, x::AbstractArray{T}, w::AbstractArray{Float64}) where T<:Integer
     n = length(x)
     if n != length(w)
         throw(ArgumentError("Inconsistent array lengths."))

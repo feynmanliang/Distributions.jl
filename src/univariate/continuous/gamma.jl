@@ -24,17 +24,17 @@ External links
 * [Gamma distribution on Wikipedia](http://en.wikipedia.org/wiki/Gamma_distribution)
 
 """
-immutable Gamma{T<:Real} <: ContinuousUnivariateDistribution
+struct Gamma{T<:Real} <: ContinuousUnivariateDistribution
     α::T
     θ::T
 
-    function (::Type{Gamma{T}}){T}(α, θ)
+    function Gamma{T}(α, θ) where T
         @check_args(Gamma, α > zero(α) && θ > zero(θ))
         new{T}(α, θ)
     end
 end
 
-Gamma{T<:Real}(α::T, θ::T) = Gamma{T}(α, θ)
+Gamma(α::T, θ::T) where {T<:Real} = Gamma{T}(α, θ)
 Gamma(α::Real, θ::Real) = Gamma(promote(α, θ)...)
 Gamma(α::Integer, θ::Integer) = Gamma(Float64(α), Float64(θ))
 Gamma(α::Real) = Gamma(α, 1.0)
@@ -85,7 +85,7 @@ cf(d::Gamma, t::Real) = (1 - im * t * d.θ)^(-d.α)
 
 @_delegate_statsfuns Gamma gamma α θ
 
-gradlogpdf{T<:Real}(d::Gamma{T}, x::Real) =
+gradlogpdf(d::Gamma{T}, x::Real) where {T<:Real} =
     insupport(Gamma, x) ? (d.α - 1) / x - 1 / d.θ : zero(T)
 
 rand(d::Gamma) = StatsFuns.RFunctions.gammarand(d.α, d.θ)
@@ -93,7 +93,7 @@ rand(d::Gamma) = StatsFuns.RFunctions.gammarand(d.α, d.θ)
 
 #### Fit model
 
-immutable GammaStats <: SufficientStats
+struct GammaStats <: SufficientStats
     sx::Float64      # (weighted) sum of x
     slogx::Float64   # (weighted) sum of log(x)
     tw::Float64      # total sample weight

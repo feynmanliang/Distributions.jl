@@ -14,17 +14,17 @@ External links
 * [Erlang distribution on Wikipedia](http://en.wikipedia.org/wiki/Erlang_distribution)
 
 """
-immutable Erlang{T<:Real} <: ContinuousUnivariateDistribution
+struct Erlang{T<:Real} <: ContinuousUnivariateDistribution
     α::Int
     θ::T
 
-    function (::Type{Erlang{T}}){T}(α::Real, θ::T)
+    function Erlang{T}(α::Real, θ::T) where T
         @check_args(Erlang, isinteger(α) && α >= zero(α))
         new{T}(α, θ)
     end
 end
 
-Erlang{T<:Real}(α::Int, θ::T) = Erlang{T}(α, θ)
+Erlang(α::Int, θ::T) where {T<:Real} = Erlang{T}(α, θ)
 Erlang(α::Int, θ::Integer) = Erlang{Float64}(α, Float64(θ))
 Erlang(α::Int) = Erlang(α, 1.0)
 Erlang() = Erlang(1, 1.0)

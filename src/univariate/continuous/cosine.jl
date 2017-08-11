@@ -7,14 +7,14 @@ External link:
 
 * [Cosine distribution on wikipedia](http://en.wikipedia.org/wiki/Raised_cosine_distribution)
 """
-immutable Cosine{T<:Real} <: ContinuousUnivariateDistribution
+struct Cosine{T<:Real} <: ContinuousUnivariateDistribution
     μ::T
     σ::T
 
-    (::Type{Cosine{T}}){T}(μ::T, σ::T) = (@check_args(Cosine, σ > zero(σ)); new{T}(μ, σ))
+    Cosine{T}(μ::T, σ::T) where {T} = (@check_args(Cosine, σ > zero(σ)); new{T}(μ, σ))
 end
 
-Cosine{T<:Real}(μ::T, σ::T) = Cosine{T}(μ, σ)
+Cosine(μ::T, σ::T) where {T<:Real} = Cosine{T}(μ, σ)
 Cosine(μ::Real, σ::Real) = Cosine(promote(μ, σ)...)
 Cosine(μ::Integer, σ::Integer) = Cosine(Float64(μ), Float64(σ))
 Cosine(μ::Real) = Cosine(μ, 1.0)
@@ -47,16 +47,16 @@ median(d::Cosine) = d.μ
 
 mode(d::Cosine) = d.μ
 
-var{T<:Real}(d::Cosine{T}) = d.σ^2 * (1//3 - 2/T(π)^2)
+var(d::Cosine{T}) where {T<:Real} = d.σ^2 * (1//3 - 2/T(π)^2)
 
-skewness{T<:Real}(d::Cosine{T}) = zero(T)
+skewness(d::Cosine{T}) where {T<:Real} = zero(T)
 
-kurtosis{T<:Real}(d::Cosine{T}) = 6*(90-T(π)^4) / (5*(T(π)^2-6)^2)
+kurtosis(d::Cosine{T}) where {T<:Real} = 6*(90-T(π)^4) / (5*(T(π)^2-6)^2)
 
 
 #### Evaluation
 
-function pdf{T<:Real}(d::Cosine{T}, x::Real)
+function pdf(d::Cosine{T}, x::Real) where T<:Real
     if insupport(d, x)
         z = (x - d.μ) / d.σ
         return (1 + cospi(z)) / (2d.σ)
@@ -65,11 +65,11 @@ function pdf{T<:Real}(d::Cosine{T}, x::Real)
     end
 end
 
-function logpdf{T<:Real}(d::Cosine{T}, x::Real)
+function logpdf(d::Cosine{T}, x::Real) where T<:Real
     insupport(d, x) ? log(pdf(d, x)) : -T(Inf)
 end
 
-function cdf{T<:Real}(d::Cosine{T}, x::Real)
+function cdf(d::Cosine{T}, x::Real) where T<:Real
     if x < d.μ - d.σ
         return zero(T)
     end
@@ -80,7 +80,7 @@ function cdf{T<:Real}(d::Cosine{T}, x::Real)
     (1 + z + sinpi(z) * invπ) / 2
 end
 
-function ccdf{T<:Real}(d::Cosine{T}, x::Real)
+function ccdf(d::Cosine{T}, x::Real) where T<:Real
     if x < d.μ - d.σ
         return one(T)
     end

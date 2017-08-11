@@ -20,13 +20,13 @@ External links:
 * [Poisson distribution on Wikipedia](http://en.wikipedia.org/wiki/Poisson_distribution)
 
 """
-immutable Poisson{T<:Real} <: DiscreteUnivariateDistribution
+struct Poisson{T<:Real} <: DiscreteUnivariateDistribution
     λ::T
 
-    (::Type{Poisson{T}}){T}(λ::Real) = (@check_args(Poisson, λ >= zero(λ)); new{T}(λ))
+    Poisson{T}(λ::Real) where {T} = (@check_args(Poisson, λ >= zero(λ)); new{T}(λ))
 end
 
-Poisson{T<:Real}(λ::T) = Poisson{T}(λ)
+Poisson(λ::T) where {T<:Real} = Poisson{T}(λ)
 Poisson(λ::Integer) = Poisson(Float64(λ))
 Poisson() = Poisson(1.0)
 
@@ -61,7 +61,7 @@ skewness(d::Poisson) = one(typeof(d.λ)) / sqrt(d.λ)
 
 kurtosis(d::Poisson) = one(typeof(d.λ)) / d.λ
 
-function entropy{T<:Real}(d::Poisson{T})
+function entropy(d::Poisson{T}) where T<:Real
     λ = rate(d)
     if λ == zero(T)
         return zero(T)
@@ -88,7 +88,7 @@ end
 
 rand(d::Poisson) = convert(Int, StatsFuns.RFunctions.poisrand(d.λ))
 
-immutable RecursivePoissonProbEvaluator <: RecursiveProbabilityEvaluator
+struct RecursivePoissonProbEvaluator <: RecursiveProbabilityEvaluator
     λ::Float64
 end
 
@@ -109,7 +109,7 @@ end
 
 ### Fitting
 
-immutable PoissonStats <: SufficientStats
+struct PoissonStats <: SufficientStats
     sx::Float64   # (weighted) sum of x
     tw::Float64   # total sample weight
 end

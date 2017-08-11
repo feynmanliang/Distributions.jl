@@ -23,17 +23,17 @@ External links
 
 * [Noncentral chi-squared distribution on Wikipedia](https://en.wikipedia.org/wiki/Noncentral_chi-squared_distribution)
 """
-immutable NoncentralChisq{T<:Real} <: ContinuousUnivariateDistribution
+struct NoncentralChisq{T<:Real} <: ContinuousUnivariateDistribution
     ν::T
     λ::T
-    function (::Type{NoncentralChisq{T}}){T}(ν::T, λ::T)
+    function NoncentralChisq{T}(ν::T, λ::T) where T
         @check_args(NoncentralChisq, ν > zero(ν))
         @check_args(NoncentralChisq, λ >= zero(λ))
         new{T}(ν, λ)
     end
 end
 
-NoncentralChisq{T<:Real}(ν::T, λ::T) = NoncentralChisq{T}(ν, λ)
+NoncentralChisq(ν::T, λ::T) where {T<:Real} = NoncentralChisq{T}(ν, λ)
 NoncentralChisq(ν::Real, λ::Real) = NoncentralChisq(promote(ν, λ)...)
 NoncentralChisq(ν::Integer, λ::Integer) = NoncentralChisq(Float64(ν), Float64(λ))
 

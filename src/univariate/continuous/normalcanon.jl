@@ -3,18 +3,18 @@
 
 Canonical Form of Normal distribution
 """
-immutable NormalCanon{T<:Real} <: ContinuousUnivariateDistribution
+struct NormalCanon{T<:Real} <: ContinuousUnivariateDistribution
     η::T       # σ^(-2) * μ
     λ::T       # σ^(-2)
     μ::T       # μ
 
-    function (::Type{NormalCanon{T}}){T}(η, λ)
+    function NormalCanon{T}(η, λ) where T
         @check_args(NormalCanon, λ > zero(λ))
         new{T}(η, λ, η / λ)
     end
 end
 
-NormalCanon{T<:Real}(η::T, λ::T) = NormalCanon{typeof(η/λ)}(η, λ)
+NormalCanon(η::T, λ::T) where {T<:Real} = NormalCanon{typeof(η/λ)}(η, λ)
 NormalCanon(η::Real, λ::Real) = NormalCanon(promote(η, λ)...)
 NormalCanon(η::Integer, λ::Integer) = NormalCanon(Float64(η), Float64(λ))
 NormalCanon() = NormalCanon(0., 1.)
@@ -43,8 +43,8 @@ mean(d::NormalCanon) = d.μ
 median(d::NormalCanon) = mean(d)
 mode(d::NormalCanon) = mean(d)
 
-skewness{T<:Real}(d::NormalCanon{T}) = zero(T)
-kurtosis{T<:Real}(d::NormalCanon{T}) = zero(T)
+skewness(d::NormalCanon{T}) where {T<:Real} = zero(T)
+kurtosis(d::NormalCanon{T}) where {T<:Real} = zero(T)
 
 var(d::NormalCanon) = 1 / d.λ
 std(d::NormalCanon) = sqrt(var(d))
@@ -77,5 +77,5 @@ invlogccdf(d::NormalCanon, lp::Real) = xval(d, norminvlogccdf(lp))
 
 rand(cf::NormalCanon) = rand(GLOBAL_RNG, cf)
 rand(rng::AbstractRNG, cf::NormalCanon) = cf.μ + randn(rng) / sqrt(cf.λ)
-rand!{T<:Real}(cf::NormalCanon, r::AbstractArray{T}) = rand!(GLOBAL_RNG, cf, r)
-rand!{T<:Real}(rng::AbstractRNG, cf::NormalCanon, r::AbstractArray{T}) = rand!(rng, convert(Normal, cf), r)
+rand!(cf::NormalCanon, r::AbstractArray{T}) where {T<:Real} = rand!(GLOBAL_RNG, cf, r)
+rand!(rng::AbstractRNG, cf::NormalCanon, r::AbstractArray{T}) where {T<:Real} = rand!(rng, convert(Normal, cf), r)

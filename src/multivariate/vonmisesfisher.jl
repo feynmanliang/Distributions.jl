@@ -12,12 +12,12 @@
 #     http://www.mitsuba-renderer.org/~wenzel/files/vmf.pdf
 #
 
-immutable VonMisesFisher{T<:Real} <: ContinuousMultivariateDistribution
+struct VonMisesFisher{T<:Real} <: ContinuousMultivariateDistribution
     μ::Vector{T}
     κ::T
     logCκ::T
 
-    function (::Type{VonMisesFisher{T}}){T}(μ::Vector{T}, κ::T; checknorm::Bool=true)
+    function VonMisesFisher{T}(μ::Vector{T}, κ::T; checknorm::Bool=true) where T
         if checknorm
             isunitvec(μ) || error("μ must be a unit vector")
         end
@@ -28,8 +28,8 @@ immutable VonMisesFisher{T<:Real} <: ContinuousMultivariateDistribution
     end
 end
 
-VonMisesFisher{T<:Real}(μ::Vector{T}, κ::T) = VonMisesFisher{T}(μ, κ)
-VonMisesFisher{T<:Real}(μ::Vector{T}, κ::Real) = VonMisesFisher(promote_eltype(μ, κ)...)
+VonMisesFisher(μ::Vector{T}, κ::T) where {T<:Real} = VonMisesFisher{T}(μ, κ)
+VonMisesFisher(μ::Vector{T}, κ::Real) where {T<:Real} = VonMisesFisher(promote_eltype(μ, κ)...)
 
 function VonMisesFisher(θ::Vector)
     κ = vecnorm(θ)
@@ -51,7 +51,7 @@ length(d::VonMisesFisher) = length(d.μ)
 meandir(d::VonMisesFisher) = d.μ
 concentration(d::VonMisesFisher) = d.κ
 
-insupport{T<:Real}(d::VonMisesFisher, x::AbstractVector{T}) = isunitvec(x)
+insupport(d::VonMisesFisher, x::AbstractVector{T}) where {T<:Real} = isunitvec(x)
 params(d::VonMisesFisher) = (d.μ, d.κ)
 @inline partype{T<:Real}(d::VonMisesFisher{T}) = T
 
@@ -66,7 +66,7 @@ end
 _vmflck3(κ) = log(κ) - log2π - κ - log1mexp(-2κ)
 vmflck(p, κ) = (p == 3 ? _vmflck3(κ) : _vmflck(p, κ))
 
-_logpdf{T<:Real}(d::VonMisesFisher, x::AbstractVector{T}) = d.logCκ + d.κ * dot(d.μ, x)
+_logpdf(d::VonMisesFisher, x::AbstractVector{T}) where {T<:Real} = d.logCκ + d.κ * dot(d.μ, x)
 
 
 ### Sampling

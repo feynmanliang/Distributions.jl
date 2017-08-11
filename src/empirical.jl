@@ -4,7 +4,7 @@
 #
 ##############################################################################
 
-immutable EmpiricalUnivariateDistribution <: ContinuousUnivariateDistribution
+struct EmpiricalUnivariateDistribution <: ContinuousUnivariateDistribution
 	values::Vector{Float64}
     support::Vector{Float64}
 	cdf::Function

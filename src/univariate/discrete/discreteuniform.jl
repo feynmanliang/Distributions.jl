@@ -21,7 +21,7 @@ External links
 
 * [Discrete uniform distribution on Wikipedia](http://en.wikipedia.org/wiki/Uniform_distribution_(discrete))
 """
-immutable DiscreteUniform <: DiscreteUnivariateDistribution
+struct DiscreteUniform <: DiscreteUnivariateDistribution
     a::Int
     b::Int
     pv::Float64
